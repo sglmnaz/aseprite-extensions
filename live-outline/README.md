@@ -3,8 +3,8 @@
 A live pixel-art outline on a layer **under** the art: draw the character on the layers above and the
 outline redraws itself. No more erasing and redrawing the outline after every change of the silhouette.
 
-**Install:** double-click `dist/live-outline.aseprite-extension` (built by `pack.py`) (or Aseprite ▸ Edit ▸
-Preferences ▸ Extensions ▸ Add Extension). Rebuild it after editing the sources: `python live-outline/pack.py`.
+**Install:** copy the `live-outline` folder into Aseprite's extensions folder and restart Aseprite (see the
+[main README](../README.md#install)).
 
 ## Use
 

@@ -21,20 +21,20 @@ local M = {}
 local floor, byte, char, concat, huge = math.floor, string.byte, string.char, table.concat, math.huge
 
 M.PRECISIONS = {
-  { name = "Veloce (4 bit)", bits = 4 },
-  { name = "Normale (5 bit)", bits = 5 },
+  { name = "Fast (4 bit)", bits = 4 },
+  { name = "Normal (5 bit)", bits = 5 },
   { name = "Fine (6 bit)", bits = 6 },
 }
 M.DITHERS = {
-  { name = "Nessuno", n = 0 },
+  { name = "None", n = 0 },
   { name = "Bayer 2x2", n = 2 },
   { name = "Bayer 4x4", n = 4 },
   { name = "Bayer 8x8", n = 8 },
 }
 M.SCOPES = {
-  { name = "Cel corrente", id = "cel" },
-  { name = "Tutte le cel del layer", id = "layer" },
-  { name = "Tutto lo sprite", id = "sprite" },
+  { name = "Current Cel", id = "cel" },
+  { name = "All Cels in Layer", id = "layer" },
+  { name = "Whole Sprite", id = "sprite" },
 }
 
 function M.byName(list, name, default)
@@ -757,14 +757,14 @@ end
 function M.targets(spr, scope, layer, frame)
   local cels = {}
   if scope == "cel" then
-    if not usable(layer) then return nil, "Il layer corrente non è modificabile (bloccato, gruppo, tilemap o riferimento)." end
+    if not usable(layer) then return nil, "The current layer can't be edited (locked, group, tilemap or reference layer)." end
     local cel = layer:cel(frame)
-    if not cel then return nil, "Nessuna cel nel frame corrente di questo layer." end
+    if not cel then return nil, "This layer has no cel in the current frame." end
     cels[1] = cel
   else
     local list
     if scope == "layer" then
-      if not usable(layer) then return nil, "Il layer corrente non è modificabile (bloccato, gruppo, tilemap o riferimento)." end
+      if not usable(layer) then return nil, "The current layer can't be edited (locked, group, tilemap or reference layer)." end
       list = layer.cels
     else
       list = spr.cels
@@ -776,7 +776,7 @@ function M.targets(spr, scope, layer, frame)
         if not seen[id] then seen[id] = true cels[#cels + 1] = cel end
       end
     end
-    if #cels == 0 then return nil, "Nessuna cel modificabile (i layer bloccati vengono saltati)." end
+    if #cels == 0 then return nil, "No editable cels (locked layers are skipped)." end
   end
   return cels
 end
@@ -787,15 +787,15 @@ end
 --    detail (lambda of the downscale, 0 = plain majority), setPalette, toIndexed.
 -- Returns { before = colours, after = colours, seconds, width, height } or nil + message.
 function M.run(spr, p, layer, frame)
-  if spr.colorMode ~= ColorMode.RGB then return nil, "Lo sprite deve essere in RGB." end
+  if spr.colorMode ~= ColorMode.RGB then return nil, "The sprite must be in RGB mode." end
   local cels, err = M.targets(spr, p.scope, layer, frame)
   if not cels then return nil, err end
   local block = math.max(1, math.floor(p.block or 1))
   local sel = spr.selection
   local hasSel = sel and not sel.isEmpty
   if block > 1 then
-    if hasSel then return nil, "Con la riduzione di dimensione togli prima la selezione (Ctrl+D)." end
-    if spr.width // block < 1 or spr.height // block < 1 then return nil, "Blocco più grande dello sprite." end
+    if hasSel then return nil, "To shrink the sprite, deselect first (Ctrl+D)." end
+    if spr.width // block < 1 or spr.height // block < 1 then return nil, "Block is bigger than the sprite." end
   end
 
   local t0 = os.clock()
@@ -811,7 +811,7 @@ function M.run(spr, p, layer, frame)
     else
       sources[i] = { img = img, x = cel.position.x, y = cel.position.y, cel = cel }
     end
-    if sources[i].img.rowStride ~= sources[i].img.width * 4 then return nil, "Formato immagine inatteso." end
+    if sources[i].img.rowStride ~= sources[i].img.width * 4 then return nil, "Unexpected image format." end
   end
   local mask
   if hasSel then
@@ -823,7 +823,7 @@ function M.run(spr, p, layer, frame)
 
   local count = M.collect(sources, p, mask)
   local keys = sortedKeys(count)
-  if #keys == 0 then return nil, "Nessun pixel opaco da ridurre." end
+  if #keys == 0 then return nil, "No opaque pixels to reduce." end
 
   -- In Indexed one index is the transparent colour, unless the sprite is a single background layer.
   local reserve = not (#spr.layers == 1 and spr.layers[1].isBackground)
@@ -857,7 +857,7 @@ function M.run(spr, p, layer, frame)
     end
   end
 
-  app.transaction("Riduci colori a " .. #pal, function()
+  app.transaction("Reduce Colors to " .. #pal, function()
     if block > 1 then spr:resize(spr.width // block, spr.height // block) end
     for i, s in ipairs(sources) do
       local r = results[i]
@@ -889,7 +889,7 @@ function M.run(spr, p, layer, frame)
     local tIdx = spr.transparentColor
     local lookup = {}
     for i, c in ipairs(pal) do lookup[(c.r << 16) | (c.g << 8) | c.b] = i - 1 + off end
-    app.transaction("Indici esatti", function()
+    app.transaction("Exact Indices", function()
       for i, s in ipairs(sources) do
         local cel = s.cel
         local im = cel.image:clone()

@@ -2,20 +2,20 @@
 --
 -- The dialog shows only what changed the result on real images; everything else is fixed in FIXED (the values that
 -- gave the best results in the tests, see README). The core still takes every option.
--- The dialog stays open: Applica, look, Ctrl+Z, change the values, Applica again.
+-- The dialog stays open: Apply, look, Ctrl+Z, change the values, Apply again.
 
 local core
 local prefs
 local dlg
 
-local PREFS_VERSION = 3   -- bump to reset the saved values to new defaults
+local PREFS_VERSION = 4   -- bump to reset the saved values to new defaults
 
 -- What the user sets.
 local DEFAULTS = {
-  scope = "Cel corrente",
-  dmin = 6,          -- Distinzione colori (x100)
-  block = 1,         -- Blocco (px)
-  detail = 0,        -- Dettagli piccoli
+  scope = "Current Cel",
+  dmin = 6,          -- Color Distinction (x100)
+  block = 1,         -- Block (px)
+  detail = 0,        -- Small Details
   toIndexed = false,
 }
 
@@ -57,7 +57,7 @@ local function reset()
   dlg:modify { id = "block", value = DEFAULTS.block }
   dlg:modify { id = "detail", value = DEFAULTS.detail }
   dlg:modify { id = "toIndexed", selected = DEFAULTS.toIndexed }
-  dlg:modify { id = "info", text = "Impostazioni ripristinate." }
+  dlg:modify { id = "info", text = "Settings reset." }
   refreshEnabled()
 end
 
@@ -65,8 +65,8 @@ local function apply()
   local spr = app.sprite
   if not spr then return end
   if spr.colorMode ~= ColorMode.RGB then
-    local answer = app.alert { title = "Riduci colori", text = "Lo sprite non è in RGB: lo converto?",
-      buttons = { "Converti in RGB", "Annulla" } }
+    local answer = app.alert { title = "Reduce Colors", text = "The sprite is not in RGB mode. Convert it?",
+      buttons = { "Convert to RGB", "Cancel" } }
     if answer ~= 1 then return end
     app.command.ChangePixelFormat { format = "rgb" }
   end
@@ -84,40 +84,40 @@ local function apply()
 
   local ok, res, err = pcall(core.run, spr, p, app.layer, app.frame)
   if not ok then
-    app.alert { title = "Riduci colori", text = { "Errore:", tostring(res) } }
+    app.alert { title = "Reduce Colors", text = { "Error:", tostring(res) } }
     return
   end
   if not res then
-    app.alert { title = "Riduci colori", text = err }
+    app.alert { title = "Reduce Colors", text = err }
     return
   end
-  dlg:modify { id = "info", text = string.format("%d colori -> %d, %dx%d  (%.1f s)", res.before, res.after,
+  dlg:modify { id = "info", text = string.format("%d colors -> %d, %dx%d  (%.1f s)", res.before, res.after,
     res.width, res.height, res.seconds) }
   app.refresh()
 end
 
 local function openDialog()
   if dlg then dlg:close() end
-  dlg = Dialog { title = "Riduci colori", onclose = function() dlg = nil end }
-  dlg:combobox { id = "scope", label = "Applica a", option = pref("scope"), options = names(core.SCOPES) }
+  dlg = Dialog { title = "Reduce Colors", onclose = function() dlg = nil end }
+  dlg:combobox { id = "scope", label = "Apply To", option = pref("scope"), options = names(core.SCOPES) }
 
-  dlg:slider { id = "dmin", label = "Distinzione colori", min = 2, max = 15, value = pref("dmin") }
-  dlg:label { label = "", text = "Colori piu simili di cosi diventano uno. Piu basso = piu colori e sfumature." }
+  dlg:slider { id = "dmin", label = "Color Distinction", min = 2, max = 15, value = pref("dmin") }
+  dlg:label { label = "", text = "Colors closer than this become one. Lower = more colors and shades." }
 
-  dlg:slider { id = "block", label = "Blocco (px)", min = 1, max = 16, value = pref("block"), onchange = refreshEnabled }
-  dlg:label { label = "", text = "1 = stessa dimensione. N = ogni quadrato NxN diventa un pixel." }
-  dlg:label { label = "", text = "Usalo sull'immagine originale grande, N = misura di un pixel finto." }
+  dlg:slider { id = "block", label = "Block (px)", min = 1, max = 16, value = pref("block"), onchange = refreshEnabled }
+  dlg:label { label = "", text = "1 = same size. N = every NxN square becomes one pixel." }
+  dlg:label { label = "", text = "Use it on the original big image, N = the size of one fake pixel." }
 
-  dlg:slider { id = "detail", label = "Dettagli piccoli", min = 0, max = 10, value = pref("detail") }
-  dlg:label { label = "", text = "0 = contorni puliti. Piu alto = piu dettagli, bordi piu frastagliati." }
+  dlg:slider { id = "detail", label = "Small Details", min = 0, max = 10, value = pref("detail") }
+  dlg:label { label = "", text = "0 = clean outlines. Higher = more details, more jagged edges." }
 
-  dlg:check { id = "toIndexed", label = "", text = "Converti in Indexed", selected = pref("toIndexed") }
+  dlg:check { id = "toIndexed", label = "", text = "Convert to Indexed", selected = pref("toIndexed") }
 
   dlg:separator()
-  dlg:label { id = "info", label = "", text = "Applica, guarda, Ctrl+Z per riprovare." }
-  dlg:button { id = "apply", text = "Applica", focus = true, onclick = apply }
-  dlg:button { id = "reset", text = "Ripristina", onclick = reset }
-  dlg:button { id = "close", text = "Chiudi", onclick = function() dlg:close() end }
+  dlg:label { id = "info", label = "", text = "Apply, look, Ctrl+Z to try again." }
+  dlg:button { id = "apply", text = "Apply", focus = true, onclick = apply }
+  dlg:button { id = "reset", text = "Reset", onclick = reset }
+  dlg:button { id = "close", text = "Close", onclick = function() dlg:close() end }
   refreshEnabled()
   dlg:show { wait = false }
 end
@@ -134,21 +134,21 @@ function init(plugin)
   local function enabled() return app.sprite ~= nil end
   plugin:newCommand {
     id = "ColorReducerReduceColors",
-    title = "Riduci colori...",
+    title = "Reduce Colors...",
     group = "sprite_color",
     onclick = openDialog,
     onenabled = enabled,
   }
   plugin:newCommand {
     id = "ColorReducerReduceColorsFx",
-    title = "Riduci colori...",
+    title = "Reduce Colors...",
     group = "edit_fx",
     onclick = openDialog,
     onenabled = enabled,
   }
   plugin:newCommand {
     id = "ColorReducerReduceColorsPalette",
-    title = "Riduci colori...",
+    title = "Reduce Colors...",
     group = "palette_generation",
     onclick = openDialog,
     onenabled = enabled,
