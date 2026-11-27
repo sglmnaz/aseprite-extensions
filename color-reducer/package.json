@@ -1,0 +1,20 @@
+{
+  "name": "color-reducer",
+  "displayName": "Color Reducer",
+  "description": "Reduces an image to distinct key colours (OKLab, palette measured on flat areas, similar colours merged) and shrinks AI \"fake pixel art\" to its real pixel grid; exact Indexed conversion, one undo step.",
+  "version": "1.0.0",
+  "author": {
+    "name": "sglmnaz"
+  },
+  "publisher": "sglmnaz",
+  "categories": [
+    "Scripts"
+  ],
+  "contributes": {
+    "scripts": [
+      {
+        "path": "./plugin.lua"
+      }
+    ]
+  }
+}

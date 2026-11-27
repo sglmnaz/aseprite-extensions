@@ -1,0 +1,20 @@
+{
+  "name": "live-outline",
+  "displayName": "Live Outline",
+  "description": "Live pixel-art outline on a layer under the art: up to 10 rings with free width and Aseprite-style corners, redrawn by itself at every change, no extra undo steps.",
+  "version": "2.0.0",
+  "author": {
+    "name": "sglmnaz"
+  },
+  "publisher": "sglmnaz",
+  "categories": [
+    "Scripts"
+  ],
+  "contributes": {
+    "scripts": [
+      {
+        "path": "./plugin.lua"
+      }
+    ]
+  }
+}
